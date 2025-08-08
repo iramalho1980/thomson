@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Fiscal - Painel de Controle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #404040 50%, #5a5a5a 75%, #c0c0c0 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #1e3a8a, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #c0c0c0;
+            opacity: 0.8;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            padding: 20px 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .section-header:hover {
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .toggle-btn:hover {
+            background: linear-gradient(135deg, #15803d, #16a34a);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .section-content.expanded {
+            max-height: 1000px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .item-btn {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            border: none;
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .item-btn:hover {
+            background: linear-gradient(135deg, #15803d, #16a34a);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-overlay.show {
+            display: flex;
+        }
+
+        .popup {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 1000px;
+            height: 80%;
+            max-height: 600px;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: popupSlideIn 0.4s ease;
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            padding: 20px 30px;
+            border-radius: 25px 25px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .popup-content {
+            padding: 30px;
+            height: calc(100% - 80px);
+            overflow-y: auto;
+        }
+
+        .popup-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 15px;
+            background: white;
+        }
+
+        .popup-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #ffffff;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .popup {
+                width: 95%;
+                height: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema Fiscal</h1>
+            <p>Painel de Controle Integrado</p>
+        </div>
+
+        <!-- SEÇÃO OPERACIONAL -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection('operacional')">
+                <h2 class="section-title">OPERACIONAL</h2>
+                <button class="toggle-btn" id="btn-operacional">Expandir</button>
+            </div>
+            <div class="section-content" id="content-operacional">
+                <div class="content-grid">
+                    <button class="item-btn" onclick="openPopup('IMPORTAR NF-E ENTRADA E SAÍDA', 'text', 'Utilitários/Importação/Importação padrão/NF-e arquivo XML')">
+                        IMPORTAR NF-E ENTRADA E SAÍDA
+                    </button>
+                    <button class="item-btn" onclick="openPopup('IMPORTAR SERVIÇOS PRESTADOS + TOMADOS ABRASF', 'text', 'Utilitários/Importação/Importação padrão/NFS_e arquivo XML Abrasf')">
+                        IMPORTAR SERVIÇOS PRESTADOS + TOMADOS ABRASF
+                    </button>
+                    <button class="item-btn" onclick="openPopup('IMPORTAR SAT CF-E', 'text', 'Utilitários/Importação/Importação padrão/Cupons Fiscal Eletrônicos CF-e')">
+                        IMPORTAR SAT CF-E
+                    </button>
+                    <button class="item-btn" onclick="openPopup('IMPORTAR NFC-E', 'text', 'Utilitários/Importação/Importação padrão/NFC-e arquivo XML')">
+                        IMPORTAR NFC-E
+                    </button>
+                    <button class="item-btn" onclick="openPopup('APURAR IMPOSTO', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=7347&palavraChave=APURA%C3%87%C3%83O&modulosSelecionados=2,26&intencaoID=0')">
+                        APURAR IMPOSTO
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO RELATÓRIOS -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection('relatorios')">
+                <h2 class="section-title">RELATÓRIOS</h2>
+                <button class="toggle-btn" id="btn-relatorios">Expandir</button>
+            </div>
+            <div class="section-content" id="content-relatorios">
+                <div class="content-grid">
+                    <button class="item-btn" onclick="openPopup('ENTRADAS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1846&palavraChave=RELAT%C3%93RIO%20DE%20ENTRADAS&modulosSelecionados=0&intencaoID=0')">
+                        ENTRADAS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('SAÍDAS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1847&palavraChave=RELAT%C3%93RIO%20DE%20SA%C3%8DDAS&modulosSelecionados=0&intencaoID=0')">
+                        SAÍDAS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('SERVIÇOS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=71&palavraChave=RELAT%C3%93RIO%20ACOMPANHAMENTO%20DE%20SERVI%C3%87OS&modulosSelecionados=0&intencaoID=0')">
+                        SERVIÇOS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('NOTAS NÃO LANÇADAS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1894&palavraChave=NOTAS%20N%C3%83O%20LAN%C3%87ADAS&modulosSelecionados=0&intencaoID=0')">
+                        NOTAS NÃO LANÇADAS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('CUPOM FISCAL ELETRÔNICO CFÉ NÃO LANÇADOS', 'text', 'Relatórios/Acompanhamentos/Cupons Fiscais eletrônicos CF-e não lançados')">
+                        CUPOM FISCAL ELETRÔNICO CFÉ NÃO LANÇADOS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('FATURAMENTO', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1404&palavraChave=relat%C3%B3rio%20de%20faturamento&modulosSelecionados=0&intencaoID=0')">
+                        FATURAMENTO
+                    </button>
+                    <button class="item-btn" onclick="openPopup('ACUMULADOR', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1866&palavraChave=resumo%20por%20acumulador&modulosSelecionados=0&intencaoID=0')">
+                        ACUMULADOR
+                    </button>
+                    <button class="item-btn" onclick="openPopup('PIS E COFINS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=3512&palavraChave=relat%C3%B3rio%20pis%20e%20cofins&modulosSelecionados=0&intencaoID=0')">
+                        PIS E COFINS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('DEMAIS IMPOSTOS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1998&palavraChave=demontrativo%20dos%20impostos&modulosSelecionados=0&intencaoID=0')">
+                        DEMAIS IMPOSTOS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('RETENÇÕES A RECOLHER', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=2015&palavraChave=reten%C3%A7%C3%A3o%20a%20recolher&modulosSelecionados=0&intencaoID=0')">
+                        RETENÇÕES A RECOLHER
+                    </button>
+                    <button class="item-btn" onclick="openPopup('RETENÇÕES A COMPENSAR', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=334&palavraChave=reten%C3%A7%C3%B5es%20a%20compensar&modulosSelecionados=0&intencaoID=0')">
+                        RETENÇÕES A COMPENSAR
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO INFORMATIVOS -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection('informativos')">
+                <h2 class="section-title">INFORMATIVOS</h2>
+                <button class="toggle-btn" id="btn-informativos">Expandir</button>
+            </div>
+            <div class="section-content" id="content-informativos">
+                <div class="content-grid">
+                    <button class="item-btn" onclick="openPopup('GERAR MIT', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=11775&palavraChave=MIT&modulosSelecionados=0&intencaoID=0')">
+                        GERAR MIT
+                    </button>
+                    <button class="item-btn" onclick="openPopup('GERAR SPED FISCAL', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=1014&palavraChave=gerar%20sped%20fiscal&modulosSelecionados=0&intencaoID=0')">
+                        GERAR SPED FISCAL
+                    </button>
+                    <button class="item-btn" onclick="openPopup('GERAR SPED PIS E COFINS', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=3973&palavraChave=gerar%20efd%20contribui%C3%A7%C3%B5es&modulosSelecionados=0&intencaoID=0')">
+                        GERAR SPED PIS E COFINS
+                    </button>
+                    <button class="item-btn" onclick="openPopup('GERAR EFD REINF', 'link', 'https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=7382&palavraChave=gerar%20efd%20reinf&modulosSelecionados=0&intencaoID=0')">
+                        GERAR EFD REINF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP OVERLAY -->
+    <div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
+        <div class="popup" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <h3 class="popup-title" id="popupTitle">Título</h3>
+                <button class="close-btn" onclick="closePopup()">&times;</button>
+            </div>
+            <div class="popup-content" id="popupContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const content = document.getElementById(`content-${sectionId}`);
+            const btn = document.getElementById(`btn-${sectionId}`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                btn.textContent = 'Expandir';
+            } else {
+                content.classList.add('expanded');
+                btn.textContent = 'Recolher';
+            }
+        }
+
+        function openPopup(title, type, content) {
+            const overlay = document.getElementById('popupOverlay');
+            const popupTitle = document.getElementById('popupTitle');
+            const popupContent = document.getElementById('popupContent');
+            
+            popupTitle.textContent = title;
+            overlay.classList.add('show');
+            
+            if (type === 'link') {
+                popupContent.innerHTML = `
+                    <iframe class="popup-iframe" src="${content}" onload="hideLoading()"></iframe>
+                `;
+            } else {
+                popupContent.innerHTML = `
+                    <div class="popup-text">
+                        <h3 style="color: #3b82f6; margin-bottom: 20px;">Localização no Sistema:</h3>
+                        <p>${content}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function closePopup(event) {
+            if (event && event.target !== event.currentTarget) return;
+            
+            const overlay = document.getElementById('popupOverlay');
+            overlay.classList.remove('show');
+            
+            setTimeout(() => {
+                document.getElementById('popupContent').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Carregando...
+                    </div>
+                `;
+            }, 300);
+        }
+
+        function hideLoading() {
+            // Função chamada quando o iframe carrega
+        }
+
+        // Fechar popup com ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePopup();
+            }
+        });
+
+        // Animação de entrada dos elementos
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    section.style.transition = 'all 0.6s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
+
